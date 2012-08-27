@@ -1,0 +1,3 @@
+dependencies:
+  buckshot:
+    git: git://github.com/prujohn/Buckshot.git

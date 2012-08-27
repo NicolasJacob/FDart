@@ -1,0 +1,11 @@
+.deftable {
+ border:1px;
+ border-spacing: 0px;
+ width: 100%;
+ border-style: solid;
+}
+.deftable td {
+ border:1px;
+ border-spacing: 0px;
+ border-style: solid;
+}
