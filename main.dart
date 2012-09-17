@@ -4,9 +4,9 @@
 
 void main() {
   
-  
+
   DartServer server = new DartServer();
-  Block b=new Block.fromTable("MODELS","MODELS");
+  SBlock b=new SBlock.fromTable("MODELS","MODELS");
   b.COLUMNS['NAME']=new Column("NAME","TEXT","TEXT");
   b.COLUMNS['DESCRIPTION']=new Column("DESCRIPTION","TEXT","TEXT");
   server.ADD_BLOCK(b);

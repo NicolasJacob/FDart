@@ -19,12 +19,16 @@ final LOG_REQUESTS = true;
 class DartServer implements HttpServer {
   Map _blocks;
   HttpServer http_server;
+  
+  //* Serve a given file in response */
   _serveFile(String path,HttpResponse response) {
     File f=new File("./${path}");
     if (path.endsWith(".dart")) {
       response.headers.set(HttpHeaders.CONTENT_TYPE,"application/dart");
     } else if (path.endsWith(".js")) {
       response.headers.set(HttpHeaders.CONTENT_TYPE,"application/javascript");
+    }else if (path.endsWith(".html")) {
+      response.headers.set(HttpHeaders.CONTENT_TYPE,"text/html");
     }
     response.outputStream.writeString(f.readAsTextSync());
     response.outputStream.close();
@@ -33,6 +37,7 @@ class DartServer implements HttpServer {
   DartServer() {
     this.http_server=new HttpServer();
     this._blocks=new Map ();
+ 
     
     WebSocketHandler wsHandler = new WebSocketHandler();
     this.http_server.addRequestHandler((req) => req.path == "/ws", wsHandler.onRequest);
@@ -49,7 +54,7 @@ class DartServer implements HttpServer {
         var jdata=JSON.parse(message);
         var response;
         switch (jdata['operation']) {
-          case 'get':
+          case 'EXECUTE_QUERY':
            
             Block bl=this._blocks[jdata['block']];
             content.add(
@@ -86,13 +91,22 @@ class DartServer implements HttpServer {
             Block bl=this._blocks[jdata['block']];
             bl.FETCH(jdata['number']);
             content.add("""<tr id=${bl.ROWS.length}">""");
-            bl.ROWS.forEach( (col) {
-              content.add("<td>${col}</td>") ;
+            bl.ROWS.forEach( (row) {
+              row.forEach( (col) {
+                content.add("<td>${col}</td>") ;
+              });
+              content.add("</tr>");
             });
-            content.add("</tr>");
-            response={'operation':'append', 'table': "${bl.NAME}_DATA",  'contend':'${content.toString()}'};
-            break;
             
+            response={'operation':'append', 'table': "${bl.NAME}_DATA",  'content':'${content.toString()}'};
+            break;
+          case 'declare':
+            print ("Create block : ${jdata['block']}");
+            SBlock bl=new SBlock.fromTable(jdata['block'],jdata['query']);
+            this._blocks[jdata['block']]=bl;
+            response={'operation':'declare', 'block': bl.NAME ,  'status':'ok'};
+            
+            break;
         };
         
         conn.send(JSON.stringify(response));
@@ -102,13 +116,11 @@ class DartServer implements HttpServer {
         print('closed with $status for $reason');
       };
       
-      conn.onError = (e) {
-        print('Error was $e');
-      };
+
     };
     
   }
-  ADD_BLOCK(Block b) {
+  ADD_BLOCK(SBlock b) {
     this._blocks[b.NAME]=b;
   }
   
@@ -118,15 +130,23 @@ class DartServer implements HttpServer {
     if (LOG_REQUESTS) {
       print("Request: ${request.method} ${request.uri}");
     }
+    if (request.path!='/favicon.ico') {
+    _serveFile(request.path,response);
+    }
+    else {
+      response.outputStream.close();
+    }
+    /*
     if (request.path.startsWith('/static')) {
       _serveFile(request.path,response);
     } else {
+      
       String htmlResponse = createHtmlResponse();
       
       response.headers.set(HttpHeaders.CONTENT_TYPE, "text/html; charset=UTF-8");
       response.outputStream.writeString(htmlResponse);
       response.outputStream.close();
-    }
+    }*/
   }
 
   
