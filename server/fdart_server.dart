@@ -41,8 +41,9 @@ class SBlock implements  Block {
   String get TABLE() { return this._table; }
   
 
-  
- 
+  /** EXECUTE_QUERY:
+   *  Stub. 
+   */ 
   bool EXECUTE_QUERY() {
     //print ("Execute Query ${this.QUERY}") ;
     _data_fetched=new List<List<String>> ();
@@ -75,7 +76,7 @@ BLOCK\nTable: ${this.TABLE}""";
   }
  
 
-}
+} 
 
 class DartServer implements HttpServer {
   Map _blocks;
