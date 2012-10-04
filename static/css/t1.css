@@ -6,6 +6,10 @@
 }
 .deftable td {
  border:1px;
+ background-color: 0xFFFFFF;
  border-spacing: 0px;
  border-style: solid;
+}
+td .dirty {
+background-color: 0xFF1111;
 }

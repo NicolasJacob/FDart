@@ -3,15 +3,17 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>test</title>
+    <title>Sample FDart Application</title>
+    <link rel="stylesheet" href="/static/css/t1.css">
   </head>
   <body>
     <h1>test</h1>
     
     <p>Hello world from Dart!</p>
-    
-    <block  name="MODEL" query="SELECT NAME FROM MODEL">
-      
+   
+    <block  name="MODEL" query="SELECT ID,NAME FROM MODEL" format="table">
+      <column name="ID"    />
+      <column name="NAME"  />
     </bock>
 
     <script type="application/dart" src="test.dart"></script>

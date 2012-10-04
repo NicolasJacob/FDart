@@ -1,5 +1,5 @@
-#import ("block.dart");
-#import ("fdart_server.dart");
+#import ("common/block.dart");
+#import ("server/fdart_server.dart");
 #import("dart:io");
 
 void main() {
