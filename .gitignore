@@ -15,6 +15,7 @@ local.properties
 .classpath
 .settings/
 .loadpath
+*.dart.js
 
 # External tool builders
 .externalToolBuilders/
