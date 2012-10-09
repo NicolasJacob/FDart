@@ -92,6 +92,8 @@ class CBlock implements Block  {
     content.add(
         """<button id="clear">Clear</button>
            <button id="query">Query</button>
+           <button id="cancel">Cancel</button>
+           <button id="save">Save</button>
         """
     );
     content.add(
@@ -172,6 +174,37 @@ class CBlock implements Block  {
     }
     this.CURRENT_ITEM.number=num;
   }
+  void addNodeEvent(Element elt) {
+    elt.queryAll("input").forEach( (Element input) {
+      print("Add envents to $input ");
+      input.on.focus.add((evt) {
+        HTMLInputElement cell= evt.srcElement;
+          if ( ! cell.attributes.containsKey("initialValue")) {
+            cell.attributes["initialValue"]=cell.value;
+          }
+          cell.parent.parent.classes.add("focus");
+          //cell.parent.parent.attributes["class"]="focus";
+          int row=evt.srcElement.parent.parent.attributes['num'];
+          int col=evt.srcElement.parent.attributes['num'];
+          print('focus $row , $col');
+          //GO_RECORD(row );
+          //GO_ITEM(col);
+          //this.ON_LOCK();
+        });
+    
+      input.on.blur.add((evt) {
+        print('blur');
+        HTMLInputElement cell= evt.srcElement;
+        cell.parent.parent.classes.remove("focus");
+        if (cell.attributes["initialValue"]!=cell.value) {
+          cell.parent.parent.classes.add("dirty");
+        }
+        //cell.parent.parent.attributes["class"]="";
+        //TODO: validate item, and cancel navigation in case of failure
+      });
+    }
+    );
+  }
   
   void setupTable( ) {
     Element div=this.element.query("div");
@@ -184,16 +217,8 @@ class CBlock implements Block  {
       }
      }
    );
-   div.queryAll("tr").forEach( (Element tr) {
-     tr.on.click.add((evt) {
-          GO_RECORD(int.parse(tr.attributes['num']) );
-          GO_ITEM(int.parse(evt.srcElement.attributes['num']) );
-          this.ON_LOCK();
-          }
-        );
-     
-    }
-   );
+   div.queryAll("td").forEach( addNodeEvent) ;
+
   }
   
 }

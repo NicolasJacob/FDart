@@ -6,7 +6,7 @@
 #import("dart:io");
 #import("dart:json");
 #import("../common/block.dart");
-
+#import("../server/sblock.dart");
 
 
 final HOST = "127.0.0.1";
@@ -16,67 +16,7 @@ final PORT = 8085;
 
 final LOG_REQUESTS = true;
 
-class SBlock implements  Block {
 
-  List<List<String>> _data_fetched;
-  bool _query_in_progress;
-  final String _name ;
-  String _table ;
-  String QUERY ;
-  Map<String,Column> COLUMNS;
-  var nb_rows;
-
-  SBlock.fromTable(this._name, this._table)  {
-    this.COLUMNS=new Map<String,Column>();
-  }
-  
-  set TABLE(String t) {
-    this._table= t;
-    this.QUERY="""
-    SELECT * FROM ${this._table} 
-    """;
-  }
-  get NAME() =>  this._name;
-
-  String get TABLE() { return this._table; }
-  
-
-  /** EXECUTE_QUERY:
-   *  Stub. 
-   */ 
-  bool EXECUTE_QUERY() {
-    //print ("Execute Query ${this.QUERY}") ;
-    _data_fetched=new List<List<String>> ();
-    nb_rows=0;
-    return true; //TODO
-  }
-  
-  num FETCH([int nb_ligne=10]){
-    _data_fetched=new List<List<String>> ();
-    for (var i = 0; i < nb_ligne; i++) {
-       var l = ["${nb_rows}","Record ${nb_rows}"];
-      _data_fetched.add(l);
-      nb_rows++;
-    }
-    return 10;
-  }
-  get ROWS() =>  _data_fetched;
-  
-  String toString(){
-    return """
-BLOCK\nTable: ${this.TABLE}""";
-  }
-  
-  /*Trigger */
-  void EXIT() {
-    
-  }
-  void ENTER() {
-    
-  }
- 
-
-} 
 
 class DartServer implements HttpServer {
   Map _blocks;
@@ -95,21 +35,7 @@ class DartServer implements HttpServer {
     response.outputStream.writeString(f.readAsTextSync());
     response.outputStream.close();
   }
-  StringBuffer toHTMLTable(Block bl) {
-    StringBuffer content=new StringBuffer();
-    int i=0;
-    bl.ROWS.forEach( (List<String> r) {
-      i++;
-      int j=0;
-      content.add("""<tr num="${i}">""");
-      r.forEach( (col) {
-        j++;
-        content.add("""<td num="${j}"" >${col}</td>""") ;
-      });
-      content.add("</tr>");
-    });
-    return content;
-  }
+  
   
   DartServer() {
     this.http_server=new HttpServer();
@@ -140,14 +66,14 @@ class DartServer implements HttpServer {
             bl.FETCH(100);
             response={'operation':'DATA', 
                       'block': bl.NAME, 
-                      'data':this.toHTMLTable(bl).toString()};
+                      'data':bl.toHTMLTable().toString()};
             break;
           case 'FETCH':
             SBlock bl=this._blocks[block_name];
             bl.FETCH(data['number']);
             response={'operation':'APPEND', 
                       'block': bl.NAME, 
-                      'data':this.toHTMLTable(bl).toString()};
+                      'data':bl.toHTMLTable().toString()};
 
             break;
           case 'DECLARE':

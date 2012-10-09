@@ -1,23 +1,5 @@
-#library ("block");
-
-class Column {
-  final String NAME;
-  String DATA_TYPE;
-  String DISPLAY_TYPE; 
-  Column(this.NAME,this.DATA_TYPE,this.DISPLAY_TYPE);
-}
-
-abstract class Block {
-  get NAME;
-  void EXECUTE_QUERY();
-  num FETCH([int nb_ligne=10]);
-  get ROWS() ;
-  
-  /*Trigger */
-  void EXIT() ;
-  void ENTER() ;
-}
-
+#library ("sblock");
+#import("../common/block.dart");
 class SBlock implements  Block {
 
   List<List<String>> _data_fetched;
@@ -54,12 +36,12 @@ class SBlock implements  Block {
   
   num FETCH([int nb_ligne=10]){
     _data_fetched=new List<List<String>> ();
- 	  for (var i = 0; i < nb_ligne; i++) {
- 	     var l = ["${nb_rows}","Record ${nb_rows}"];
+    for (var i = 0; i < nb_ligne; i++) {
+       var l = ["${nb_rows}","Record ${nb_rows}"];
       _data_fetched.add(l);
       nb_rows++;
     }
-  	return 10;
+    return 10;
   }
   get ROWS() =>  _data_fetched;
   
@@ -75,7 +57,22 @@ BLOCK\nTable: ${this.TABLE}""";
   void ENTER() {
     
   }
+  
+  StringBuffer toHTMLTable() {
+    StringBuffer content=new StringBuffer();
+    int i=0;
+    this.ROWS.forEach( (List<String> r) {
+      i++;
+      int j=0;
+      content.add("""<tr num="${i}">""");
+      r.forEach( (col) {
+        j++;
+        content.add("""<td num="${j}""><input value="${col}"/></td>""") ;
+      });
+      content.add("</tr>");
+    });
+    return content;
+  }
  
 
 }
-
