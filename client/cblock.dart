@@ -178,14 +178,14 @@ class CBlock implements Block  {
     elt.queryAll("input").forEach( (Element input) {
       print("Add envents to $input ");
       input.on.focus.add((evt) {
-        HTMLInputElement cell= evt.srcElement;
+        Element cell= evt.srcElement;
           if ( ! cell.attributes.containsKey("initialValue")) {
             cell.attributes["initialValue"]=cell.value;
           }
           cell.parent.parent.classes.add("focus");
           //cell.parent.parent.attributes["class"]="focus";
-          int row=evt.srcElement.parent.parent.attributes['num'];
-          int col=evt.srcElement.parent.attributes['num'];
+          int row=int.parse(cell.parent.parent.attributes['num']);
+          int col=int.parse(cell.parent.attributes['num']);
           print('focus $row , $col');
           //GO_RECORD(row );
           //GO_ITEM(col);
@@ -194,7 +194,7 @@ class CBlock implements Block  {
     
       input.on.blur.add((evt) {
         print('blur');
-        HTMLInputElement cell= evt.srcElement;
+        Element cell= evt.srcElement;
         cell.parent.parent.classes.remove("focus");
         if (cell.attributes["initialValue"]!=cell.value) {
           cell.parent.parent.classes.add("dirty");

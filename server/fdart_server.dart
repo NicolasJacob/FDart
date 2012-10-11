@@ -24,6 +24,7 @@ class DartServer implements HttpServer {
   
   //* Serve a given file in response */
   _serveFile(String path,HttpResponse response) {
+    print ("serve file $path");
     File f=new File("./${path}");
     if (path.endsWith(".dart")) {
       response.headers.set(HttpHeaders.CONTENT_TYPE,"application/dart");
