@@ -10,6 +10,13 @@
  border-spacing: 0px;
  border-style: solid;
 }
-td .dirty {
-background-color: 0xFF1111;
+.dirty {
+background-color: peachPuff;
+}
+
+.focus {
+background-color: greenYellow;
+}
+.error {
+background-color: red;
 }

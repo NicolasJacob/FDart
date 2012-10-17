@@ -21,10 +21,16 @@ final LOG_REQUESTS = true;
 class DartServer implements HttpServer {
   Map _blocks;
   HttpServer http_server;
-  
+  void set defaultRequestHandler( void f(HttpRequest req, HttpResponse resp) ) {}
+  int port;
+  void set onError(dynamic err) {}
+  void listen(String str, int t , [int backlog]) {}
+  void listenOn(ServerSocket sock) {}
+  dynamic  addRequestHandler(bool handler(HttpRequest) ,  void act (HttpRequest, HttpResponse) ) 
+  {}
+  void close() {}
   //* Serve a given file in response */
   _serveFile(String path,HttpResponse response) {
-    print ("serve file $path");
     File f=new File("./${path}");
     if (path.endsWith(".dart")) {
       response.headers.set(HttpHeaders.CONTENT_TYPE,"application/dart");
@@ -37,8 +43,14 @@ class DartServer implements HttpServer {
     response.outputStream.close();
   }
   
+  void respond(WebSocketConnection conn,String operation,String response,String block,var data) 
+  {
+    var resp={ 'operation': operation, 'response': response, 'block': block, 'data':data};
+    conn.send(JSON.stringify(resp));
+  }
   
-  DartServer() {
+  DartServer() 
+  {
     this.http_server=new HttpServer();
     this._blocks=new Map ();
  
@@ -54,47 +66,58 @@ class DartServer implements HttpServer {
       
       conn.onMessage = (message) {
         print("message is $message");
-        
-        var jdata=JSON.parse(message);
-        String operation = jdata['operation'].toUpperCase();
-        var block_name  = jdata['block'].toUpperCase() ;
-        var data= jdata['data'] ; 
-        var response;
-        switch (operation) {    
-          case 'EXECUTE_QUERY':  
-            SBlock bl=this._blocks[block_name];
-            bl.EXECUTE_QUERY();
-            bl.FETCH(100);
-            response={'operation':'DATA', 
-                      'block': bl.NAME, 
-                      'data':bl.toHTMLTable().toString()};
-            break;
-          case 'FETCH':
-            SBlock bl=this._blocks[block_name];
-            bl.FETCH(data['number']);
-            response={'operation':'APPEND', 
-                      'block': bl.NAME, 
-                      'data':bl.toHTMLTable().toString()};
+        String response;
+        Map resp_data;
+        String block_name;
+        String operation;
+        try {
+          var jdata=JSON.parse(message);
+          operation = jdata['operation'].toUpperCase();
+          block_name  = jdata['block'].toUpperCase() ;
+          var op_data= jdata['data'] ; 
 
-            break;
-          case 'DECLARE':
-            print ("Create block : ${jdata['block']}");
-            SBlock bl=new SBlock.fromTable(jdata['block'],jdata['query']);
-            this._blocks[jdata['block']]=bl;
-            response={'operation':'declare', 'block': bl.NAME ,  'status':'ok'};
-            
-            break;
-            
-          case 'LOCK':
-            SBlock bl=this._blocks[block_name];
-            response={'operation':'LOCK', 'block': bl.NAME , 'row_number': data['row_number'], 'status':'ok'};
-            break;
-          default:
-            
-            response={'operation':operation,  'status':'error'};
-        };
+          switch (operation) {    
+            case Operation.EXECUTE_QUERY:  
+              SBlock bl=this._blocks[block_name];
+              bl.EXECUTE_QUERY();
+              bl.FETCH(100);
+              response=Response.DATA;
+              resp_data={ 'html': bl.toHTMLTable().toString()};
+              break;
+            case Operation.FETCH:
+              SBlock bl=this._blocks[block_name];
+              bl.FETCH(op_data['number']);
+              response=Response.APPEND;
+              resp_data={ 'html': bl.toHTMLTable().toString()};  
+              break;
+            case Operation.DECLARE:
+              print ("Create block : ${block_name}");
+              SBlock bl=new SBlock.fromTable(block_name,jdata['query']);
+              this._blocks[block_name]=bl;
+              response=Response.DECLARE;
+              resp_data={ 'status': Status.OK };      
+              break;
+              
+            case Operation.LOCK:
+              SBlock bl=this._blocks[block_name];
+              response=Response.LOCKED;
+              // TODO LOCK ROWS
+              resp_data={ 'row_number': op_data['row_number'], 'status': Status.OK };
+              break;
+            default:            
+              response=Response.ERROR;
+              // TODO LOCK ROWS
+              resp_data={ 'cause': "Unknown operation: $operation", 'status': Status.ERROR };
+          };
+        } catch (e) {
+          response=Response.ERROR;
+          block_name="";
+          operation="";
+          // TODO LOCK ROWS
+          resp_data={ 'cause': "Unknown error: $e", 'status': Status.ERROR };
+        }
+        respond(conn,operation,response,block_name,resp_data)  ;
         
-        conn.send(JSON.stringify(response));
       };
       
       conn.onClosed = (int status, String reason) {

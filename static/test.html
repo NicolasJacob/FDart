@@ -4,17 +4,14 @@
   <head>
     <meta charset="utf-8">
     <title>Sample FDart Application</title>
-    <link rel="stylesheet" href="/static/css/t1.css">
+    <link rel="stylesheet" href="/static/css/test.css">
   </head>
   <body>
     <h1>test</h1>
     
     <p>Hello world from Dart!</p>
    
-    <block  name="MODEL" query="SELECT ID,NAME FROM MODEL" format="table">
-      <column name="ID"    />
-      <column name="NAME"  />
-    </bock>
+    <block  name="MODEL" />
 
     <script type="application/dart" src="test.dart"></script>
     <script src="http://dart.googlecode.com/svn/branches/bleeding_edge/dart/client/dart.js"></script>

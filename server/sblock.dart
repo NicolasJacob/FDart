@@ -1,13 +1,15 @@
 #library ("sblock");
 #import("../common/block.dart");
-class SBlock implements  Block {
+
+
+class SBlock extends  Block {
 
   List<List<String>> _data_fetched;
   bool _query_in_progress;
   final String _name ;
   String _table ;
   String QUERY ;
-  Map<String,Column> COLUMNS;
+
   var nb_rows;
 
   SBlock.fromTable(this._name, this._table)  {
