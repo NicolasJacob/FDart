@@ -2,12 +2,13 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-#library("fdart_server");
-#import("dart:io");
-#import("dart:json");
-#import("../common/block.dart");
-#import("../server/sblock.dart");
+library fdart_server;
+import "dart:io";
+import "dart:json";
+import "../common/block.dart";
 
+
+part "sblock.dart" ;
 
 final HOST = "127.0.0.1";
 final PORT = 8085;
@@ -79,7 +80,7 @@ class DartServer implements HttpServer {
           switch (operation) {    
             case Operation.EXECUTE_QUERY:  
               SBlock bl=this._blocks[block_name];
-              bl.EXECUTE_QUERY();
+              bl.EXECUTE_QUERY(op_data["where"]);
               bl.FETCH(100);
               response=Response.DATA;
               resp_data={ 'html': bl.toHTMLTable().toString()};
@@ -159,28 +160,7 @@ class DartServer implements HttpServer {
 
   
   
-  String createHtmlResponse() {
-    return 
-  '''
-  <html>
-    <link rel="stylesheet" href="/static/css/t1.css">
-    <style>
-      body { background-color: teal; }
-      p { background-color: white; border-radius: 8px; border:solid 1px #555; text-align: center; padding: 0.5em; 
-          font-family: "Lucida Grande", Tahoma; font-size: 18px; color: #555; }
-    </style>
-    <body>
-      <br/><br/>
-      <p>Current time: ${new Date.now()}</p>
-      <p>Blocks: ${this._blocks}</p>
-      <div class="block" name="MODELS" ></div>
-      <p id="DEBUG"></p>
-      <script type="application/dart" src="static/client.dart"></script>
-      <script src="static/js/dart.js"></script>
-  </body>
-  </html>
-  ''';
-  }
+  
 }
 
 

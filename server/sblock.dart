@@ -1,6 +1,3 @@
-#library ("sblock");
-#import("../common/block.dart");
-
 
 class SBlock extends  Block {
 
@@ -9,6 +6,7 @@ class SBlock extends  Block {
   final String _name ;
   String _table ;
   String QUERY ;
+  String _where;
 
   var nb_rows;
 
@@ -29,19 +27,33 @@ class SBlock extends  Block {
 
   
  
-  bool EXECUTE_QUERY() {
+  bool EXECUTE_QUERY(String where_clause) {
     //print ("Execute Query ${this.QUERY}") ;
     _data_fetched=new List<List<String>> ();
+    _where=where_clause;
     nb_rows=0;
     return true; //TODO
   }
   
   num FETCH([int nb_ligne=10]){
     _data_fetched=new List<List<String>> ();
-    for (var i = 0; i < nb_ligne; i++) {
-       var l = ["${nb_rows}","Record ${nb_rows}"];
-      _data_fetched.add(l);
-      nb_rows++;
+    switch (this.NAME) {
+    case 'MODEL': 
+      for (var i = 0; i < nb_ligne; i++) {
+         var l = ["${nb_rows}","Model ${nb_rows}"];
+        _data_fetched.add(l);
+        nb_rows++;
+      }
+      break;
+    case 'INPUT':
+      
+      for (var i = 0; i < nb_ligne; i++) {
+         var l = ["${nb_rows}","Input ${_where} ${nb_rows}",i];
+        _data_fetched.add(l);
+        nb_rows++;
+      }
+      break;
+      
     }
     return 10;
   }

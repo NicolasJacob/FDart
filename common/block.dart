@@ -1,4 +1,5 @@
-#library ("block");
+library block;
+import 'dart:json';
 
 class Operation {
   
@@ -48,28 +49,34 @@ class Column {
   bool dirty;
   Dynamic CURRENT_VALUE;
   Column(this.NAME,this.DATA_TYPE,this.DISPLAY_TYPE);
+  Map<String,String> toJson(){
+    return { 'name':NAME,'type':DATA_TYPE};
+  }
 }
 
 class Relation {
-  String JOIN_CLAUSE;
   Block CHILD;
+  String JOIN_CLAUSE;
   Relation(this.CHILD,this.JOIN_CLAUSE);
+  Map<String,String> toJson(){
+    return { 'block': JSON.stringify(CHILD),'join':JOIN_CLAUSE};
+  }
 }
 
 abstract class Block {
   String NAME;
   Map<String,Column> COLUMNS=new Map<String,Column>();
-  List<Relation>  CHILDS ;
+  List<Relation>  CHILDS =new List<Relation> ();
   Record  CURRENT_RECORD = new Record(null);
   Item    CURRENT_ITEM = new Item(null);
   
   /* High level control directive */
-  void EXECUTE_QUERY();
+  void EXECUTE_QUERY(String where_clause);
   num FETCH([int nb_ligne=10]);
   get ROWS() ;
   void CLEAR_BLOCK() ;
   void GO_RECORD(int number) ;
-
+  Map<String,Dynamic> toJson();
   /*Trigger */
   bool LOCK_RECORD();
   bool VALIDATE_ITEM(String row,String col,String value) {}

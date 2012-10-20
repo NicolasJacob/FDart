@@ -2,12 +2,12 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-#library('fdart_client');
-#import('dart:html');
-#import('dart:json');
-#import('../common/block.dart');
+library fdart_client;
+import 'dart:html';
+import 'dart:json';
+import '../common/block.dart';
 
-#source("cblock.dart");
+part 'cblock.dart';
 
 final IP = '127.0.0.1';
 final PORT = 8085;
@@ -53,7 +53,7 @@ class CForm {
     });
     
     ws.on.message.add((m) {
-      print ("Message on web socket: ${m.data}");
+      print ("Message on web socket.");
       try {
         Map jdata = JSON.parse(m.data);  
         var response=jdata['response'];
@@ -67,7 +67,7 @@ class CForm {
             break;      
           case Response.DATA:
           case Response.APPEND:  
-            print("Insert data in block block_name");   
+            print("Insert data in block ${block_name}");   
             bl.BUSY--;
             bl.getDataElement().insertAdjacentHTML('beforeend', resp_data['html']);
             bl.setupTable();
@@ -84,6 +84,11 @@ class CForm {
     });
     return c.future;
   }
+  DivElement makeDiv(String name) {
+ 
+    return new DivElement()..attributes['type']="block"
+                           ..attributes['name']=name;
+  }
   
   void loadBlock() {
     print ("Loading Blocks");
@@ -92,28 +97,45 @@ class CForm {
       print ("Found block $bl_name");
       CBlock bl;
       if (this.BLOCKS.containsKey(bl_name)) {
-        print ("Block $bl_name denined in Dart.s");
+        print ("Block $bl_name defined in Dart.");
         bl= this.BLOCKS[bl_name];  
       }
       else
       {
-        print("Error: block not defined. Using default config");
+        print("Block not defined in dart. Using HTML definition.");
         bl=new CBlock();
         bl.NAME=bl_name;
         this.BLOCKS[bl_name]= bl;
+        bl.element.queryAll("column").forEach((Element col) {
+            bl.COLUMNS[col.attributes['name']]=new Column(col.attributes['name'],"" ,"");
+          }
+        );
       
       }
       bl.FORM=this;
       bl.element=block;
-      bl.element.queryAll("column").forEach((Element col) {
-          bl.COLUMNS[col.attributes['name']]=new Column(col.attributes['name'],"" ,"");
-        }
-      );
+      
     
       
       bl.toHTMLTable();
       print("Declare block on server...");
-      this.send( Operation.DECLARE,block.attributes['name'],{'query':block.attributes['name']} );
+      
+      this.send( Operation.DECLARE,
+                 block.attributes['name'],
+                 bl.toJson()
+                 );
+      bl.CHILDS.forEach(( Relation r) {
+        CBlock child=r.CHILD;
+        child.FORM=this;
+        child.element=makeDiv(child.NAME);
+        child.toHTMLTable();
+        this.BLOCKS[child.NAME]= child;
+        bl.element.insertAdjacentElement("beforeend", child.element);
+        this.send( Operation.DECLARE,
+            child.NAME,
+            child.toJson()
+        );
+      });
 
     });
   }
@@ -126,8 +148,8 @@ class CForm {
     CURRENT_BLOCK.ENTER_BLOCK();
   }
   
-  void EXECUTE_QUERY() {
-    CURRENT_BLOCK.EXECUTE_QUERY();
+  void EXECUTE_QUERY(String where_clauses) {
+    CURRENT_BLOCK.EXECUTE_QUERY(where_clauses);
   }
   
   

@@ -18,11 +18,20 @@ class MODEL extends CBlock{
 
 main() {
  CForm Form=new CForm("TEST");
- CBlock MODEL= new MODEL();
- MODEL.NAME="MODEL";
- MODEL.COLUMNS['ID']=new Column("ID","NUMBER","TEXT");
- MODEL.COLUMNS['NAME']=new Column("NAME","NUMBER","TEXT");
- Form.addBlock(MODEL);
+ CBlock model= new MODEL();
+ model.NAME="MODEL";
+ model.COLUMNS['ID']=new Column("ID","NUMBER","TEXT");
+ model.COLUMNS['NAME']=new Column("NAME","TEXT","TEXT");
+ 
+ CBlock input=new CBlock();
+ input.NAME="INPUT";
+ input.COLUMNS['ID']=new Column("ID","NUMBER","TEXT");
+ input.COLUMNS['NAME']=new Column("NAME","TEXT","TEXT");
+ input.COLUMNS['DEFAULT_VALUE']=new Column("DEFAULT_VALUE","TEXT","TEXT");
+ 
+ model.CHILDS.add(new Relation(input,"MODEL.id=INPUT.MODEL_id"));
+ 
+ Form.addBlock(model);
  Form.init().then( ( bool status) {
      
      Form.GO_BLOCK("MODEL");

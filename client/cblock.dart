@@ -7,12 +7,25 @@
 class CBlock extends Block  {
   
 
-  CForm  FORM; 
+  CForm  _FORM; 
   int BUSY=0;
 
+  Map<String,Dynamic> toJson() 
+  { 
+    print("toJSON");
+    return {
+      'name':this.NAME,
+      'relations': JSON.stringify(this.CHILDS),
+      'columns': JSON.stringify(this.COLUMNS)
+    } ;
+  }
+  get FORM => this._FORM;
+  set FORM (v) => this._FORM=v;
   
- 
-  Element element;
+  Element _element;
+  
+  get element => this._element;
+  set element (v) => this._element=v;
   
   CBlock() {}
   
@@ -20,8 +33,8 @@ class CBlock extends Block  {
 
   /* Data Exchange with remote server */
   
-  void EXECUTE_QUERY() {
-     this.send(Operation.EXECUTE_QUERY, null);
+  void EXECUTE_QUERY(String where_clause) {
+     this.send(Operation.EXECUTE_QUERY, {'where': where_clause} );
   }
   
  
@@ -119,7 +132,7 @@ class CBlock extends Block  {
     Element b = this.element.query("#query");
     b.on.click.add( (e) {
   
-      this.EXECUTE_QUERY();
+      this.EXECUTE_QUERY("");
     }
     );
     b =this.element.query("#clear");
@@ -156,7 +169,7 @@ class CBlock extends Block  {
   
   void addNodeEvent(Element elt) {
     elt.queryAll("input").forEach( (Element input) {
-      print("Add envents to $input ");
+      //print("Add envents to $input ");
       input.on.focus.add((evt) {
         InputElement cell= evt.srcElement;
           if ( ! cell.attributes.containsKey("initialValue")) {
@@ -166,8 +179,15 @@ class CBlock extends Block  {
           //cell.parent.parent.attributes["class"]="focus";
           int row=int.parse(cell.parent.parent.attributes['num']);
           int col=int.parse(cell.parent.attributes['num']);
-          //print('focus $row , $col');
-          GO_RECORD(row );
+          if (row != this.CURRENT_RECORD.number) {
+            //print('focus $row , $col');
+            GO_RECORD(row );
+
+            this.CHILDS.forEach( (Relation r) {
+              r.CHILD.CLEAR_BLOCK();
+              r.CHILD.EXECUTE_QUERY("MODEL $row");
+            });
+          }
           GO_ITEM(col);
           //this.ON_LOCK();
         });
