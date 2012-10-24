@@ -105,11 +105,7 @@ class CForm {
         bl.NAME=bl_name;
         this.BLOCKS[bl_name]= bl;
         bl.element.queryAll("column").forEach((Element col) {
-<<<<<<< HEAD:client/fdart_client.dart
             bl.ADD_COLUMN(new Column(col.attributes['name']));
-=======
-            bl.COLUMNS[col.attributes['name']]=new Column(col.attributes['name']);
->>>>>>> w:client/fdart_client.dart
           }
         );
 
