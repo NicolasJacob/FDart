@@ -1,3 +1,4 @@
+part of fdart_client;
 
 /** CBlock:
  * Dart client side of a Block
@@ -5,13 +6,13 @@
  * Data are in the DOM
  */
 class CBlock extends Block  {
-  
 
-  CForm  _FORM; 
+
+  CForm  _FORM;
   int BUSY=0;
 
-  Map<String,Dynamic> toJson() 
-  { 
+  Map<String,Dynamic> toJson()
+  {
     print("toJSON");
     return {
       'name':this.NAME,
@@ -21,49 +22,49 @@ class CBlock extends Block  {
   }
   get FORM => this._FORM;
   set FORM (v) => this._FORM=v;
-  
+
   Element _element;
-  
+
   get element => this._element;
   set element (v) => this._element=v;
-  
+
   CBlock() {}
-  
+
 
 
   /* Data Exchange with remote server */
-  
+
   void EXECUTE_QUERY(String where_clause) {
      this.send(Operation.EXECUTE_QUERY, {'where': where_clause} );
   }
-  
- 
-  
- 
-  
+
+
+
+
+
   num FETCH([int nb_ligne=10]) {
     if (this.BUSY<=0) {
       this.BUSY++;
       this.send(Operation.FETCH, {'number':nb_ligne} );
     }
   }
-  
+
   bool LOCK_RECORD() {
 
     this.send (Operation.LOCK, { "row_number": this.CURRENT_RECORD.number } );
     return true;
   }
-  
-  
-  get ROWS() {
+
+
+  get ROWS {
     throw ("ROWS: No such method");
   }
-  
-  
+
+
   /* Navigation */
-  void GO_RECORD(int number) 
+  void GO_RECORD(int number)
   {
-    
+
 
     /*if (this.CURRENT_RECORD.number > 0 ) {
       VALIDATE_RECORD();
@@ -72,38 +73,38 @@ class CBlock extends Block  {
     this.CURRENT_RECORD.number=number;
     NEW_RECORD_INSTANCE();
   }
-  get CURRENT_VALUE() 
+  get CURRENT_VALUE
   {
-    
+
   }
-  void GO_ITEM(int num) 
-  { 
-    
+  void GO_ITEM(int num)
+  {
+
 
     this.CURRENT_ITEM.number=num;
   }
-  
 
-  
+
+
 
   void CLEAR_BLOCK() {
     this.getDataElement().innerHTML="";
     this.CURRENT_RECORD.number = 0;
     this.CURRENT_ITEM.number = 0;
   }
-  
-  
-  
+
+
+
   Element getDataElement() {
     return this.element.query('#${this.NAME}_DATA');
   }
-    
+
   void send(String operation, data ) {
     var msg=JSON.stringify({'operation': operation, 'block':NAME, 'data': data});
     print( "Send : $msg");
     this.FORM.ws.send(msg);
   }
-  
+
   void toHTMLTable() {
     StringBuffer content=new StringBuffer();
     content.add(
@@ -122,22 +123,22 @@ class CBlock extends Block  {
         """
     );
     content.add("<tr>");
-    this.COLUMNS.forEach( (key,val) {
+    this.COLUMNS.forEach( (val) {
       content.add("<td>${val.NAME}</td>");
     });
     content.add("</tr></thead>");
-    
+
     content.add("""<tbody  contenteditable  id="${this.NAME}_DATA" ></tbody></table></div>""");
     this.element.insertAdjacentHTML("beforeend", content.toString());
     Element b = this.element.query("#query");
     b.on.click.add( (e) {
-  
+
       this.EXECUTE_QUERY("");
     }
     );
     b =this.element.query("#clear");
     b.on.click.add( (e) {
-  
+
       this.CLEAR_BLOCK();
     }
     );
@@ -147,7 +148,7 @@ class CBlock extends Block  {
     }
     );
   }
-  
+
   void appendData( List<List<String>> data)
   {
     var i =0;
@@ -165,8 +166,8 @@ class CBlock extends Block  {
     this.element.query("tbody").insertAdjacentHTML("beforeend", content.toString());
 
   }
-  
-  
+
+
   void addNodeEvent(Element elt) {
     elt.queryAll("input").forEach( (Element input) {
       //print("Add envents to $input ");
@@ -191,7 +192,7 @@ class CBlock extends Block  {
           GO_ITEM(col);
           //this.ON_LOCK();
         });
-    
+
       input.on.blur.add((evt) {
         //print('blur');
         InputElement cell= evt.srcElement;
@@ -201,14 +202,14 @@ class CBlock extends Block  {
           try {
             VALIDATE_ITEM(cell.parent.parent.attributes['num'],cell.parent.attributes['num'],cell.value);
             cell.classes.remove("error");
-          } 
+          }
           catch (e)
           {
             print ('Invalid value: $e');
             cell.classes.add("error");
           }
         }
-   
+
        //cell.parent.parent.attributes["class"]="";
         //TODO: validate item, and cancel navigation in case of failure
       });
@@ -239,18 +240,18 @@ class CBlock extends Block  {
     Element div=this.element.query("div");
     div.on.scroll.add((e) {
       DivElement div=e.srcElement;
-  
+
       print ('scrollHeight ${div.scrollHeight} / ${div.clientHeight} + ${div.scrollTop}');
       if ((div.scrollHeight==div.clientHeight + div.scrollTop)) {
         FETCH(10);
-        
+
       }
      }
    );
    div.queryAll("td").forEach( addNodeEvent) ;
 
   }
-  
+
 }
 
 
