@@ -20,7 +20,11 @@ main() {
  CForm Form=new CForm("TEST");
  CBlock cust= new MODEL();
  cust.NAME="CUSTOMER";
+<<<<<<< HEAD
  cust.ADD_COLUMN(new Column("ID")..VISIBLE=false
+=======
+ cust.ADD_COLUMN(new Column("id")..VISIBLE=false
+>>>>>>> w
                                  ..DATA_TYPE="NUMBER"
                                  ..PRIMARY_KEY=true
     );
@@ -28,8 +32,13 @@ main() {
                                         ..DATA_TYPE="TEXT"
                                         ..WIDTH=12
                 );
+<<<<<<< HEAD
  cust.ADD_COLUMN( new Column("LASTNAME")..DATA_TYPE="TEXT"
                                         ..LABEL="Last Name");
+=======
+ cust.ADD_COLUMN( new Column("FISTNAME")..DATA_TYPE="TEXT"
+                                        ..LABEL="First Name");
+>>>>>>> w
  cust.ADD_COLUMN( new Column("PHONE")..DATA_TYPE="PHONE"
                                         ..LABEL="Phone N°");
 

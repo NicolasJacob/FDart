@@ -13,7 +13,13 @@ class SBlock extends  Block {
 
   var nb_rows;
 
+<<<<<<< HEAD
   SBlock.fromTable(this._name, this._table) ;
+=======
+  SBlock.fromTable(this._name, this._table)  {
+    this.COLUMNS=new Map<String,Column>();
+  }
+>>>>>>> w
 
   set TABLE(String t) {
     this._table= t;
@@ -37,8 +43,15 @@ class SBlock extends  Block {
   }
 
   num FETCH([int nb_ligne=10]){
+<<<<<<< HEAD
     _data_fetched=this.database[this.NAME];
    
+=======
+    _data_fetched=new List<List<String>> ();
+    for (var i = 0; i < nb_ligne; i++) {
+      _data_fetched.add(this.database[this.NAME]);
+    } 
+>>>>>>> w
     /*
     switch (this.NAME) {
     case 'MODEL':
@@ -75,7 +88,25 @@ BLOCK\nTable: ${this.TABLE}""";
 
   }
 
+<<<<<<< HEAD
   
+=======
+  StringBuffer toHTMLTable() {
+    StringBuffer content=new StringBuffer();
+    int i=0;
+    this.ROWS.forEach( (List<String> r) {
+      i++;
+      int j=0;
+      content.add("""<tr num="${i}">""");
+      r.forEach( (col) {
+        j++;
+        content.add("""<td num="${j}""><input value="${col}"/></td>""") ;
+      });
+      content.add("</tr>");
+    });
+    return content;
+  }
+>>>>>>> w
 
 
 }
