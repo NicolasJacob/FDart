@@ -107,46 +107,44 @@ class CBlock extends Block  {
 
   void toHTMLTable() {
     StringBuffer content=new StringBuffer();
-    content.add(
-        """<div id="${this.NAME}"  style="overflow:auto; width:400px; height:300px; border-style:solid; border-width:1px; ">"""
-    );
-    content.add(
-        """<button id="clear">Clear</button>
-           <button id="query">Query</button>
-           <button id="cancel">Cancel</button>
-           <button id="save">Save</button>
-        """
-    );
-    content.add(
-        """<table class="deftable">
-        <thead>
-        """
-    );
-    content.add("<tr>");
-    this.COLUMNS.forEach( (val) {
-      content.add("<td>${val.NAME}</td>");
-    });
-    content.add("</tr></thead>");
-
-    content.add("""<tbody  contenteditable  id="${this.NAME}_DATA" ></tbody></table></div>""");
-    this.element.insertAdjacentHTML("beforeend", content.toString());
-    Element b = this.element.query("#query");
-    b.on.click.add( (e) {
-
-      this.EXECUTE_QUERY("");
-    }
-    );
-    b =this.element.query("#clear");
-    b.on.click.add( (e) {
-
-      this.CLEAR_BLOCK();
-    }
-    );
-    b =this.element.query("#save");
-    b.on.click.add( (e) {
+    var d=new DivElement()..id=this.NAME
+                          ..attributes["style"] ="overflow:auto; width:400px; height:300px; border-style:solid; border-width:1px;" ;
+                          
+    d.nodes.add(
+        new ButtonElement()..text="Clear"
+                           ..on.click.add( (e) {
+                                 this.CLEAR_BLOCK();
+                              }
+                              ));
+    d.nodes.add( new ButtonElement()..text="Query"
+        ..on.click.add( (e) {
+          this.EXECUTE_QUERY("");
+        }));
+    
+    d.nodes.add( new ButtonElement()..text="Save"
+        ..on.click.add( (e) {
       this.SAVE();
     }
-    );
+    ));
+
+    TableElement t=new TableElement();
+    t.classes.add("deftable");
+    d.nodes.add(t);
+        
+   
+    t.createTHead();
+    TableRowElement tr=t.tHead.insertRow(-1);
+    var i=0;
+    this.COLUMNS.forEach( (Column val) {
+        //el.hidden=!val.VISIBLE;
+        tr.insertCell(0)..text=val.LABEL;
+        i++;
+    });
+    t.createTBody();
+    
+
+    this.element.nodes.add(d);
+
   }
 
   void appendData( List<List<String>> data)

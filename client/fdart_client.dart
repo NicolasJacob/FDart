@@ -113,8 +113,6 @@ class CForm {
       bl.FORM=this;
       bl.element=block;
 
-
-
       bl.toHTMLTable();
       print("Declare block on server...");
 

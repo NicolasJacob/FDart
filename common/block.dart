@@ -44,7 +44,7 @@ class Item {
 
 class Column {
   final String NAME;
-  String LABEL;
+  String LABEL="";
   String DATA_TYPE;
   String DISPLAY_TYPE;
   bool PRIMARY_KEY;
