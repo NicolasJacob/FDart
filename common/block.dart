@@ -79,11 +79,9 @@ abstract class Block {
 
   void ADD_COLUMN(Column c)
   {
-<<<<<<< HEAD
+
     this.COLUMNS.add(c);
-=======
-    this.COLUMNS[c.NAME]=c;
->>>>>>> w
+
   }
   num FETCH([int nb_ligne=10]);
   get ROWS ;
@@ -98,8 +96,7 @@ abstract class Block {
   bool PRE_QUERY() {}
   bool EXIT_BLOCK() {}
   bool ENTER_BLOCK() {}
-<<<<<<< HEAD
-  
+
    StringBuffer get HTMLContent {
     StringBuffer content=new StringBuffer();
     int i=0;
@@ -115,8 +112,7 @@ abstract class Block {
     });
     return content;
   }
-=======
->>>>>>> w
+
 
 }
 
