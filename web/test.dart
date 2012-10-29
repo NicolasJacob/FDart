@@ -1,5 +1,6 @@
 import "../client/fdart_client.dart";
-import "../common/block.dart";
+import "dart:html";
+
 
 
 class MODEL extends CBlock{
@@ -17,6 +18,11 @@ class MODEL extends CBlock{
 
 
 main() {
+
+  int count = 0;
+
+
+
  CForm Form=new CForm("TEST");
  CBlock cust= new MODEL();
  cust.NAME="CUSTOMER";
@@ -35,17 +41,16 @@ main() {
                                         ..LABEL="Last Name");
 
  cust.ADD_COLUMN( new Column("PHONE")..DATA_TYPE="PHONE"
-                                        ..LABEL="Phone N°");
+                                        ..LABEL="Phone N");
 
 
  CBlock purshase=new CBlock();
  purshase.NAME="PURSHASE";
  purshase.ADD_COLUMN(new Column("id")..VISIBLE=false..DATA_TYPE="NUMBER"..PRIMARY_KEY=true);
  purshase.ADD_COLUMN(new Column("CUST_id")..VISIBLE=false..DATA_TYPE="NUMBER");
- purshase.ADD_COLUMN(new Column("id")..VISIBLE=false
-                                     ..DATA_TYPE="NUMBER"
-                                     ..PRIMARY_KEY=true);
- purshase.ADD_COLUMN(new Column("NAME"));
+
+ purshase.ADD_COLUMN(new Column("NAME")..LABEL="Name");
+ purshase.ADD_COLUMN(new Column("VALUE")..LABEL="Value");
  cust.CHILDS.add(new Relation(purshase,"MODEL.id=INPUT.MODEL_id"));
 
  Form.addBlock(cust);

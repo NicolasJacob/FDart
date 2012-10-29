@@ -9,7 +9,7 @@ class SBlock extends  Block {
   String _table ;
   String QUERY ;
   String _where;
-  Dynamic database;
+  Map<String,List<dynamic>> database={};
 
   var nb_rows;
 
@@ -39,27 +39,11 @@ class SBlock extends  Block {
   }
 
   num FETCH([int nb_ligne=10]){
-    _data_fetched=this.database[this.NAME];
+    this.database.forEach( (k,v) {
+      this._data_fetched.add([ k , v]);
+    });
 
-    /*
-    switch (this.NAME) {
-    case 'MODEL':
-      for (var i = 0; i < nb_ligne; i++) {
-         var l = ["${nb_rows}","Model ${nb_rows}"];
-        _data_fetched.add(l);
-        nb_rows++;
-      }
-      break;
-    case 'INPUT':
 
-      for (var i = 0; i < nb_ligne; i++) {
-         var l = ["${nb_rows}","Input ${_where} ${nb_rows}",i];
-        _data_fetched.add(l);
-        nb_rows++;
-      }
-      break;
-
-    }*/
     return 10;
   }
   get ROWS =>  _data_fetched;

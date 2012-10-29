@@ -1,3 +1,3 @@
-dependencies:
-  buckshot:
-    git: git://github.com/prujohn/Buckshot.git
+name: FDart
+description: Ala Oracle Forms framework for Dart
+version: 0.0.2

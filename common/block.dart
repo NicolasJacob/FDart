@@ -48,10 +48,10 @@ class Column {
   String DATA_TYPE;
   String DISPLAY_TYPE;
   bool PRIMARY_KEY;
-  bool VISIBLE;
-  int WIDTH;
+  bool VISIBLE=true;
+  int WIDTH=100;
   bool dirty;
-  Dynamic CURRENT_VALUE;
+  dynamic CURRENT_VALUE;
   Column(this.NAME);
   Map<String,String> toJson(){
     return { 'name':NAME,'type':DATA_TYPE};
@@ -87,7 +87,7 @@ abstract class Block {
   get ROWS ;
   void CLEAR_BLOCK() ;
   void GO_RECORD(int number) ;
-  Map<String,Dynamic> toJson();
+  Map<String,dynamic> toJson();
   /*Trigger */
   bool LOCK_RECORD();
   bool VALIDATE_ITEM(String row,String col,String value) {}

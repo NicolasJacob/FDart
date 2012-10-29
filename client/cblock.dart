@@ -11,7 +11,7 @@ class CBlock extends Block  {
   CForm  _FORM;
   int BUSY=0;
 
-  Map<String,Dynamic> toJson()
+  Map<String,dynamic> toJson()
   {
     print("toJSON");
     return {
@@ -31,14 +31,11 @@ class CBlock extends Block  {
   CBlock() {}
 
 
-
   /* Data Exchange with remote server */
 
   void EXECUTE_QUERY(String where_clause) {
      this.send(Operation.EXECUTE_QUERY, {'where': where_clause} );
   }
-
-
 
 
 
@@ -64,8 +61,6 @@ class CBlock extends Block  {
   /* Navigation */
   void GO_RECORD(int number)
   {
-
-
     /*if (this.CURRENT_RECORD.number > 0 ) {
       VALIDATE_RECORD();
     }
@@ -79,8 +74,6 @@ class CBlock extends Block  {
   }
   void GO_ITEM(int num)
   {
-
-
     this.CURRENT_ITEM.number=num;
   }
 
@@ -88,7 +81,8 @@ class CBlock extends Block  {
 
 
   void CLEAR_BLOCK() {
-    this.getDataElement().innerHTML="";
+    Element el = this.getDataElement();
+    if (el != null) { el.innerHTML="";}
     this.CURRENT_RECORD.number = 0;
     this.CURRENT_ITEM.number = 0;
   }
@@ -96,7 +90,7 @@ class CBlock extends Block  {
 
 
   Element getDataElement() {
-    return this.element.query('#${this.NAME}_DATA');
+    return this.element.query('tbody');
   }
 
   void send(String operation, data ) {
@@ -106,10 +100,10 @@ class CBlock extends Block  {
   }
 
   void toHTMLTable() {
-    StringBuffer content=new StringBuffer();
+ 
     var d=new DivElement()..id=this.NAME
                           ..attributes["style"] ="overflow:auto; width:400px; height:300px; border-style:solid; border-width:1px;" ;
-                          
+
     d.nodes.add(
         new ButtonElement()..text="Clear"
                            ..on.click.add( (e) {
@@ -118,9 +112,10 @@ class CBlock extends Block  {
                               ));
     d.nodes.add( new ButtonElement()..text="Query"
         ..on.click.add( (e) {
+          this.CLEAR_BLOCK();
           this.EXECUTE_QUERY("");
         }));
-    
+
     d.nodes.add( new ButtonElement()..text="Save"
         ..on.click.add( (e) {
       this.SAVE();
@@ -130,38 +125,44 @@ class CBlock extends Block  {
     TableElement t=new TableElement();
     t.classes.add("deftable");
     d.nodes.add(t);
-        
-   
+
+
     t.createTHead();
     TableRowElement tr=t.tHead.insertRow(-1);
     var i=0;
     this.COLUMNS.forEach( (Column val) {
         //el.hidden=!val.VISIBLE;
-        tr.insertCell(0)..text=val.LABEL;
+        tr.insertCell(-1)..text=val.LABEL
+                          ..hidden=!this.COLUMNS[i].VISIBLE;
         i++;
     });
     t.createTBody();
-    
-
     this.element.nodes.add(d);
 
   }
 
-  void appendData( List<List<String>> data)
+  void appendData( List<List<dynamic>> data)
   {
     var i =0;
-    StringBuffer content=new StringBuffer();
-    data.forEach( (List<String> r) {
-      i++;
-      content.add("""<tr num=${i}>""");
+    TableSectionElement tbody= this.element.query("tbody");
+    
+  
+    data.forEach( (List<dynamic> r) {
+      TableRowElement tr=tbody.insertRow(-1);
+      tr.id=r[0];
+      //content.add("""<tr num=${id}>""");
       var j=0;
-      r.forEach( (col) {
+      r[1].forEach( (col) {
+
+        tr.insertCell(-1)..id="$j"
+                         ..hidden=!this.COLUMNS[j].VISIBLE
+                         ..addHTML("""<input value="${col}"/>""");
         j++;
-        content.add("<td num=$j >${col}</td>") ;
       });
-      content.add("</tr>");
     });
-    this.element.query("tbody").insertAdjacentHTML("beforeend", content.toString());
+    
+    
+ 
 
   }
 
@@ -176,8 +177,8 @@ class CBlock extends Block  {
           }
           cell.parent.parent.classes.add("focus");
           //cell.parent.parent.attributes["class"]="focus";
-          int row=int.parse(cell.parent.parent.attributes['num']);
-          int col=int.parse(cell.parent.attributes['num']);
+          int row=int.parse(cell.parent.parent.attributes['id']);
+          int col=int.parse(cell.parent.attributes['id']);
           if (row != this.CURRENT_RECORD.number) {
             //print('focus $row , $col');
             GO_RECORD(row );
@@ -217,6 +218,7 @@ class CBlock extends Block  {
   void message(String m) {
     window.alert(m);
   }
+  
   void SAVE() {
     bool ok=true;
     this.element.queryAll(".error").forEach( (Element td) {
@@ -227,9 +229,14 @@ class CBlock extends Block  {
     }
     );
     if (ok) {
-      this.element.queryAll("tr.dirty").forEach( (Element td) {
-          this.send(Operation.UPDATE,{'html':td.innerHTML});
-          td.classes.remove("dirty");
+      this.element.queryAll("tr.dirty").forEach( (Element tr) {
+          this.BUSY++;
+          List data=new List();
+          tr.queryAll("input").forEach((InputElement i) {
+            data.add(i.value);
+          });
+          this.send(Operation.UPDATE,{'json': data });
+          tr.classes.remove("dirty");
       }
       );
     }

@@ -1,7 +1,8 @@
 library fdart_client;
 import 'dart:html';
 import 'dart:json';
-import '../common/block.dart';
+import '../common/block.dart' ;
+export  '../common/block.dart';
 part 'cblock.dart';
 
 
@@ -58,16 +59,18 @@ class CForm {
         var resp_data=jdata['data'];
         CBlock bl=this.BLOCKS[block_name];
         switch (response){
-          
+          case Response.ERROR:
+            print(resp_data);
+            break;
           case Response.DECLARE:
             print ("Block ${block_name} registered on client and sever side");
-
             break;
           case Response.DATA:
           case Response.APPEND:
             print("Insert ${resp_data['json']} data in block ${block_name}");
             bl.BUSY--;
-            bl.getDataElement().insertAdjacentHTML('beforeend', JSON.stringify(resp_data['json']));
+            List<List<dynamic>> d=JSON.parse(resp_data['json']);
+            bl.appendData(d);
             bl.setupTable();
             break;
           default:
@@ -120,6 +123,7 @@ class CForm {
                  block.attributes['name'],
                  bl.toJson()
                  );
+
       bl.CHILDS.forEach(( Relation r) {
         CBlock child=r.CHILD;
         child.FORM=this;
