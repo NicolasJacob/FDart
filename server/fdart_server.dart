@@ -20,7 +20,7 @@ class DartServer implements HttpServer {
   int port;
   void set sessionTimeout(t) { }
   void set onError(dynamic err) {}
-  void listen(String str, int t , [int backlog]) {}
+  void listen(String host, int port, {int backlog: 128}) {}
   void listenOn(ServerSocket sock) {}
   dynamic  addRequestHandler(bool handler(HttpRequest) ,  void act (HttpRequest, HttpResponse) )
   {}
@@ -108,14 +108,17 @@ class DartServer implements HttpServer {
             case Operation.DECLARE:
               print ("Create block : ${block_name}");
               SBlock bl=new SBlock.fromTable(block_name,jdata['query']);
-              bl.database=this.COLLECTIONS[block_name];
+              bl.data=this.COLLECTIONS[block_name]['data'];
+              this.COLLECTIONS[block_name]['definition'].forEach((String col) {
+                bl.ADD_COLUMN(new Column(col));
+              });
               this._blocks[block_name]=bl;
               response=Response.DECLARE;
               resp_data={ 'status': Status.OK };
               break;
             case Operation.UPDATE:
               SBlock bl=this._blocks[block_name];
-              Map<String,List<dynamic>> data=bl.database;
+              Map<String,List<dynamic>> data=bl.data;
               List<dynamic> new_data=op_data["json"];
               data[new_data[0]]= new_data;
               resp_data={ 'status': Status.OK };

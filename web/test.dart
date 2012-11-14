@@ -28,20 +28,29 @@ main() {
  cust.NAME="CUSTOMER";
 
  cust.ADD_COLUMN(new Column("id")..VISIBLE=false
-
                                  ..DATA_TYPE="NUMBER"
                                  ..PRIMARY_KEY=true
     );
  cust.ADD_COLUMN(new Column("FISTNAME")..LABEL="First Name"
                                         ..DATA_TYPE="TEXT"
-                                        ..WIDTH=12
+                                        ..DISPLAY_TYPE="input"
+                                        ..STYLE="height: 12px; "
                 );
 
  cust.ADD_COLUMN( new Column("LASTNAME")..DATA_TYPE="TEXT"
-                                        ..LABEL="Last Name");
-
+                                        ..DISPLAY_TYPE="input"
+                                        ..LABEL="Last Name"
+                                        ..STYLE="height: 12px; "
+                                        );
+ cust.ADD_COLUMN( new Column("SEX")..DATA_TYPE="TEXT"
+     ..LABEL=r"Sex"
+     ..DISPLAY_TYPE="choice"
+     ..STYLE="width:100px"
+ );
  cust.ADD_COLUMN( new Column("PHONE")..DATA_TYPE="PHONE"
-                                        ..LABEL="Phone N");
+                                        ..LABEL=r"Phone N°"
+                                        ..STYLE="height: 12px; width:200px"
+                                        );
 
 
  CBlock purshase=new CBlock();
@@ -49,9 +58,10 @@ main() {
  purshase.ADD_COLUMN(new Column("id")..VISIBLE=false..DATA_TYPE="NUMBER"..PRIMARY_KEY=true);
  purshase.ADD_COLUMN(new Column("CUST_id")..VISIBLE=false..DATA_TYPE="NUMBER");
 
- purshase.ADD_COLUMN(new Column("NAME")..LABEL="Name");
- purshase.ADD_COLUMN(new Column("VALUE")..LABEL="Value");
- cust.CHILDS.add(new Relation(purshase,"MODEL.id=INPUT.MODEL_id"));
+ purshase.ADD_COLUMN(new Column("NAME")..LABEL="Date");
+ purshase.ADD_COLUMN(new Column("VALUE")..LABEL="Total");
+ purshase.FOREIGN_KEYS.add("CUST_id");
+ cust.CHILDS.add(new Relation(purshase,["id"] ,""));
 
  Form.addBlock(cust);
  Form.init().then( ( bool status) {

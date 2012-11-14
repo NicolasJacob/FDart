@@ -8,8 +8,8 @@ class SBlock extends  Block {
   final String _name ;
   String _table ;
   String QUERY ;
-  String _where;
-  Map<String,List<dynamic>> database={};
+  WhereClause _where;
+  Map<String,List<dynamic>> data={};
 
   var nb_rows;
 
@@ -27,20 +27,39 @@ class SBlock extends  Block {
 
   String get TABLE { return this._table; }
 
-
-
+  WhereClause parse_where_clause (String where_clause) {
+    if (where_clause == "") { return null;}
+    var k_v=where_clause.split("=");
+    print (k_v);
+    return new WhereClause()..where=(new WhereList()..operator=""
+                                                     ..items=[ new WhereItem()..column=k_v[0].trim()
+                                                        ..value=k_v[1].trim()
+                                                   ]);
+  }
+  bool match_where_clause(List<dynamic> v) {
+    bool ret=true;
+    this._where.where.items.forEach( (WhereItem c) {
+      if ( "${v[this.rowMap[c.column]]}" != "${c.value}" )
+      {
+         ret = false;
+      } 
+    });
+    return ret;
+  }
 
   bool EXECUTE_QUERY(String where_clause) {
     //print ("Execute Query ${this.QUERY}") ;
     _data_fetched=new List<List<String>> ();
-    _where=where_clause;
+    _where=parse_where_clause(where_clause);
     nb_rows=0;
     return true; //TODO
   }
 
   num FETCH([int nb_ligne=10]){
-    this.database.forEach( (k,v) {
-      this._data_fetched.add([ k , v]);
+    this.data.forEach( (k,v) {
+      if (  _where == null || this.match_where_clause(v)) {
+        this._data_fetched.add([ k , v]);
+      }
     });
 
 

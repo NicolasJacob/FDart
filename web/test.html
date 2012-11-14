@@ -11,11 +11,21 @@ BSD-style license that can be found in the LICENSE file.
    <link rel="stylesheet" href="/web/css/test.css">
 </head>
 <body>
-  
-  <block name="CUSTOMER"/>
+  <datalist id="gender">    
+    <option> Male </option>   
+    <option> Female </option>
+  </datalist>
+  <block name="CUSTOMER" 
+         style=" width:auto; "
+         table-style="resize:both; border-collapse=collapse; border-style:solid; border-spacing: 0px; border-width:1px; height:200px; width:auto;"
+         header-style="background-color: lightcyan; border-spacing: 0px; border-collapse=collapse;"
+         header-cell-style="border-style:solid; border-width:1px; padding-left: 2px; padding-right: 0px;"
+         row-style="height:18px;"
+         cell-style="padding-left: 2px;  border-collapse=collapse; border-style:solid; border-width:1px;";
+         >
 
-
+   </block>
     <script type="application/dart" src="test.dart"></script>
-    <script src="https://dart.googlecode.com/svn/branches/bleeding_edge/dart/client/dart.js"></script>
+    <script src="dart.js"></script>
 </body>
 </html>

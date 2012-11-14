@@ -1,6 +1,20 @@
 library block;
 import 'dart:json';
 
+class WhereItem {
+  String column;
+  dynamic value;
+}
+
+class WhereList {
+  String operator;
+  List<WhereItem> items;
+}
+
+class WhereClause {
+  WhereList where;
+}
+
 class Operation {
 
   static const String EXECUTE_QUERY='EXECUTE_QUERY';
@@ -45,49 +59,65 @@ class Item {
 class Column {
   final String NAME;
   String LABEL="";
-  String DATA_TYPE;
-  String DISPLAY_TYPE;
-  bool PRIMARY_KEY;
+  String DATA_TYPE="TEXT";
+  String DISPLAY_TYPE="INPUT";
+  bool PRIMARY_KEY=false;
   bool VISIBLE=true;
-  int WIDTH=100;
-  bool dirty;
+  String STYLE="";
+  bool dirty=false;
   dynamic CURRENT_VALUE;
+  dynamic header;
+  
   Column(this.NAME);
+  
   Map<String,String> toJson(){
     return { 'name':NAME,'type':DATA_TYPE};
   }
 }
 
 class Relation {
-  Block CHILD;
-  String JOIN_CLAUSE;
-  Relation(this.CHILD,this.JOIN_CLAUSE);
+  final Block CHILD;
+  final List<String> PARENT_KEYS;
+  final String WHERE_CLAUSE;
+  Relation(this.CHILD,this.PARENT_KEYS,this.WHERE_CLAUSE);
   Map<String,String> toJson(){
-    return { 'block': JSON.stringify(CHILD),'join':JOIN_CLAUSE};
+    return { 'block': JSON.stringify(CHILD),
+             'parent_keys': JSON.stringify(PARENT_KEYS),
+             'where': WHERE_CLAUSE};
   }
 }
 
 abstract class Block {
-  String NAME;
-  List<Column> COLUMNS=new List<Column>();
-  List<Relation>  CHILDS =new List<Relation> ();
-  Record  CURRENT_RECORD = new Record(null);
-  Item    CURRENT_ITEM = new Item(null);
+  String         NAME;
+  List<Column>   COLUMNS=new List<Column>();
+  List<Relation> CHILDS =new List<Relation> ();
+  List<String>   FOREIGN_KEYS=new List();
+  Record         CURRENT_RECORD = new Record(null);
+  Item           CURRENT_ITEM = new Item(null);
+  Map<String,int> rowMap=new  Map<String,int>();
 
   /* High level control directive */
   void EXECUTE_QUERY(String where_clause);
 
   void ADD_COLUMN(Column c)
   {
-
     this.COLUMNS.add(c);
-
+    this.rowMap[c.NAME]=this.COLUMNS.length-1;
   }
+  
   num FETCH([int nb_ligne=10]);
+  
   get ROWS ;
+  
+  // Return current value for selected column
+  dynamic getValue(colomn_name) ; 
+  
   void CLEAR_BLOCK() ;
+  
   void GO_RECORD(int number) ;
+  
   Map<String,dynamic> toJson();
+  
   /*Trigger */
   bool LOCK_RECORD();
   bool VALIDATE_ITEM(String row,String col,String value) {}
@@ -97,21 +127,7 @@ abstract class Block {
   bool EXIT_BLOCK() {}
   bool ENTER_BLOCK() {}
 
-   StringBuffer get HTMLContent {
-    StringBuffer content=new StringBuffer();
-    int i=0;
-    this.ROWS.forEach( (List<String> r) {
-      i++;
-      int j=0;
-      content.add("""<tr num="${i}">""");
-      r.forEach( (col) {
-        j++;
-        content.add("""<td num="${j}""><input value="${col}"/></td>""") ;
-      });
-      content.add("</tr>");
-    });
-    return content;
-  }
+
 
 
 }
