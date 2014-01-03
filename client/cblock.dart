@@ -124,9 +124,11 @@ class CBlock extends Block  {
   }
 
   void toHTMLTable() {
-    print ("style: ${this.element.style}");
-    var mainDiv=new DivElement()..id=this.NAME
-                          ..attributes["style"] =this.element.attributes["style"];
+    //print ("style: ${this.element.style}");
+    var mainDiv=new DivElement()..id=this.NAME;
+    if ( this.element.attributes["style"] != null) {
+      mainDiv.attributes["style"] =this.element.attributes["style"];
+    }
 
     mainDiv.nodes.add(
         new ButtonElement()..text="Clear"
@@ -157,21 +159,21 @@ class CBlock extends Block  {
     
     
     TableElement tableHeader=new TableElement();
-    
-    tableHeader..attributes["style"] =this.element.attributes["header-style"];
+    if (this.element.attributes["header-style"] != null) tableHeader..attributes["style"] = this.element.attributes["header-style"];
     var headerDiv=new DivElement()..id="${this.NAME}_header"
                                   ..attributes["style"]="width:${tableHeader.style.width}; ";
     
     tableHeader.createTHead();
     TableRowElement tr=tableHeader.tHead.insertRow(-1);
-    tr..attributes["style"] =this.element.attributes["header-style"];
+    if (this.element.attributes["header-style"] != null)  tr..attributes["style"] =this.element.attributes["header-style"];
     var i=0;
     this.COLUMNS.forEach( (Column col) {
         //el.hidden=!val.VISIBLE;
         col.header= tr.insertCell(-1);
         col.header..text=col.LABEL
-                  ..hidden=!col.VISIBLE
-                  ..attributes["style"]=this.element.attributes["header-cell-style"];
+                  ..hidden=!col.VISIBLE;
+        if (this.element.attributes["header-cell-style"] != null) 
+            col.header.attributes["style"]=this.element.attributes["header-cell-style"];
         
         i++;
     });
@@ -182,7 +184,7 @@ class CBlock extends Block  {
    
     
     TableElement dataTable=new TableElement();
-    dataTable..attributes["style"] =this.element.attributes["table-style"];
+    if (this.element.attributes["table-style"] != null) dataTable..attributes["style"] =this.element.attributes["table-style"];
  
     var tableDiv=new DivElement()..id="${this.NAME}_data"
       ..attributes["style"]="height:${dataTable.style.height}; resize:both; width:${dataTable.style.width}; overflow:auto";
@@ -227,7 +229,7 @@ class CBlock extends Block  {
        
         width=width- double.parse(p.replaceFirst("px",""));
       } catch (e) {
-         print(e);
+         print("Catched Error: $e");
       }
       //TODO col.header.width="${width}px";
       i++;
@@ -238,57 +240,65 @@ class CBlock extends Block  {
   {
     var i =0;
     
-    TableSectionElement tbody= this.element.query("#${this.NAME}_data").query("tbody");
+    TableSectionElement tbody= this.element.querySelector("#${this.NAME}_data").querySelector("tbody");
     
     
     data.forEach( (List<dynamic> r) {
       TableRowElement tr=tbody.insertRow(-1);
-      tr..attributes["style"] =this.element.attributes["row-style"];
+      if (this.element.attributes["row-style"] != null)
+        tr.attributes["style"] =this.element.attributes["row-style"];
       tr.id="$i";
       i++;
       //content.add("""<tr num=${id}>""");
       var j=0;
+      Element field;
       r[1].forEach( (col) {
         Column c=this.COLUMNS[j];
         TableCellElement cell=tr.insertCell(-1);
          cell..id="$j"
-             ..hidden=!c.VISIBLE
-             ..attributes["style"] =this.element.attributes["cell-style"];
+             ..hidden=!c.VISIBLE;
+             if (this.element.attributes["cell-style"]!=null)
+              cell.attributes["style"] =this.element.attributes["cell-style"];
          switch (c.DISPLAY_TYPE) {
          case "textarea":
-             TextAreaElement txt=new TextAreaElement();
-			       txt..rows=1
+             field=new TextAreaElement();
+			       (field as TextAreaElement)..rows=1
 			           ..text="$col"
 			           ..attributes["style"]=c.STYLE;
-			       txt.onFocus.listen(onRowFocus);
-			       txt.onBlur.listen(onRowBlur);
-			       cell.insertAdjacentElement("beforeend", txt)  ;  
+			       field.onFocus.listen(onRowFocus);
+			       field.onBlur.listen(onRowBlur);
+
              break;
          case "input":
-           InputElement txt=new InputElement();
-           txt..value="$col"
+           field=new InputElement();
+           (field as InputElement)..value="$col"
                ..attributes["style"]=c.STYLE;
-           txt.onFocus.listen(onRowFocus);
-           txt.onBlur.listen(onRowBlur);
-           cell.insertAdjacentElement("beforeend", txt)  ;
+           field.onFocus.listen(onRowFocus);
+           field.onBlur.listen(onRowBlur);
+          
            break;
          case "choice":
-           SelectElement txt=new SelectElement();
+           field=new SelectElement();
         
            document.querySelector("#gender").querySelectorAll("option").forEach( (Element e) {
-            txt.insertAdjacentElement("beforeend", e.clone(true));});
+            field.insertAdjacentElement("beforeend", e.clone(true));});
            
-           txt..value='$col'
-               ..attributes["style"]=c.STYLE;
-           txt.onFocus.listen(onRowFocus);
-           txt.onBlur.listen(onRowBlur);
+           (field as SelectElement)..value='$col'
+                ..attributes["style"]=c.STYLE;
+           field.onFocus.listen(onRowFocus);
+           field.onBlur.listen(onRowBlur);
       
-           cell.insertAdjacentElement("beforeend", txt)  ;
+           
            break;
          default:
-           cell..insertAdjacentHtml("beforeend", """<div style="${c.STYLE}" >$col</div>""");
+           field = new DivElement();
+           field.text="$col";
+           //field.style=c.STYLE;
+          
            break;
          }
+         field.attributes["field"]="$j";
+         cell.insertAdjacentElement("beforeend", field)  ;
         j++;
       });
     });
@@ -362,8 +372,12 @@ class CBlock extends Block  {
       this.element.querySelectorAll("tr.dirty").forEach( (Element tr) {
           this.BUSY++;
           List data=new List();
-          tr.querySelectorAll("textarea").forEach((TextAreaElement i) {
-            data.add(i.value);
+          tr.querySelectorAll("[field]").forEach(( i) {
+            try {
+              data.add(i.value);
+            } catch(e) {
+              data.add(i.text);
+            }
           });
           this.send(Operation.UPDATE,{'json': data });
           tr.classes.remove("dirty");

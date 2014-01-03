@@ -67,6 +67,6 @@ main() {
  Form.init().then( ( bool status) {
 
      Form.GO_BLOCK("CUSTOMER");
-     //Form.EXECUTE_QUERY();
+     Form.EXECUTE_QUERY("");
  }
  );}
