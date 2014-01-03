@@ -25,8 +25,8 @@ class CBlock extends Block  {
     print("toJSON");
     return {
       'name':this.NAME,
-      'relations': JSON.stringify(this.CHILDS),
-      'columns': JSON.stringify(this.COLUMNS)
+      'relations': JSON.encoder.convert(this.CHILDS),
+      'columns': JSON.encoder.convert(this.COLUMNS)
     } ;
   }
   get FORM => this._FORM;
@@ -83,7 +83,7 @@ class CBlock extends Block  {
   
   Element  row(int num) 
   {
-    return this.element.query("tbody").queryAll("tr")[num];
+    return this.element.query("tbody").querySelectorAll("tr")[num];
   }
   
   Column getColumnDef(String name) => this.COLUMNS[this.rowMap[name]];
@@ -93,7 +93,7 @@ class CBlock extends Block  {
     Element row=this.row(CURRENT_RECORD.number);
     print (row);
     Column col=getColumnDef(column_name);
-    Element cell=row.queryAll("td")[this.rowMap[column_name]];
+    Element cell=row.querySelectorAll("td")[this.rowMap[column_name]];
     switch (col.DISPLAY_TYPE) {
       case "input": 
         return (cell.nodes[0] as InputElement).value;
@@ -106,7 +106,7 @@ class CBlock extends Block  {
 
   void CLEAR_BLOCK() {
     Element el = this.getDataElement();
-    if (el != null) { el.innerHTML="";}
+    if (el != null) { el.setInnerHtml("");}
     this.CURRENT_RECORD.number = 0;
     this.CURRENT_ITEM.number = 0;
   }
@@ -118,7 +118,7 @@ class CBlock extends Block  {
   }
 
   void send(String operation, data ) {
-    var msg=JSON.stringify({'operation': operation, 'block':NAME, 'data': data});
+    var msg=JSON.encoder.convert({'operation': operation, 'block':NAME, 'data': data});
     print( "Send : $msg");
     this.FORM.ws.send(msg);
   }
@@ -130,26 +130,26 @@ class CBlock extends Block  {
 
     mainDiv.nodes.add(
         new ButtonElement()..text="Clear"
-                           ..on.click.add( (e) {
+                           ..onClick.listen( (e) {
                                  this.CLEAR_BLOCK();
                               }
                               ));
     mainDiv.nodes.add( new ButtonElement()..text="Query"
-        ..on.click.add( (e) {
+        ..onClick.listen( (e) {
           this.CLEAR_BLOCK();
           this.EXECUTE_QUERY("");
         }));
 
     mainDiv.nodes.add( new ButtonElement()..text="Save"
-        ..on.click.add( (e) {
+        ..onClick.listen( (e) {
       this.SAVE();
     }
 
     ));
-    mainDiv.insertAdjacentHTML("beforeend", "Edit");
+    mainDiv.insertAdjacentHtml("beforeend", "Edit");
     mainDiv.nodes.add(new InputElement()..type="checkbox"
-        ..on.change.add ( (e) {
-          this.editable=(e.srcElement as InputElement).checked;
+        ..onChange.listen ( (Event e) {
+          this.editable=(e.target as InputElement).checked;
           
         })
         );
@@ -195,8 +195,8 @@ class CBlock extends Block  {
     
     
     tableDiv.nodes.add(dataTable);
-    tableDiv.on.scroll.add((Event e) {   
-      DivElement div=e.srcElement;
+    tableDiv.onScroll.listen((Event e) {   
+      DivElement div=e.target;
       print ('scrollHeight ${div.scrollHeight} / ${div.clientHeight} + ${div.scrollTop}');
       if ((div.scrollTop>0) && (div.scrollHeight==div.clientHeight + div.scrollTop)) {
         FETCH(10);
@@ -205,7 +205,7 @@ class CBlock extends Block  {
 
     DivElement tf=new DivElement();
     tf..id="${this.NAME}_footer"
-      ..insertAdjacentHTML("beforeend", "<p>Fetched Record: 0/?");
+      ..insertAdjacentHtml("beforeend", "<p>Fetched Record: 0/?");
     mainDiv.nodes.add(tf);
     this.element.nodes.add(mainDiv);
  
@@ -229,7 +229,7 @@ class CBlock extends Block  {
       } catch (e) {
          print(e);
       }
-      col.header.width="${width}px";
+      //TODO col.header.width="${width}px";
       i++;
     });
     
@@ -260,39 +260,39 @@ class CBlock extends Block  {
 			       txt..rows=1
 			           ..text="$col"
 			           ..attributes["style"]=c.STYLE;
-			       txt.on.focus.add(onRowFocus);
-			       txt.on.blur.add(onRowBlur);
+			       txt.onFocus.listen(onRowFocus);
+			       txt.onBlur.listen(onRowBlur);
 			       cell.insertAdjacentElement("beforeend", txt)  ;  
              break;
          case "input":
            InputElement txt=new InputElement();
            txt..value="$col"
                ..attributes["style"]=c.STYLE;
-           txt.on.focus.add(onRowFocus);
-           txt.on.blur.add(onRowBlur);
+           txt.onFocus.listen(onRowFocus);
+           txt.onBlur.listen(onRowBlur);
            cell.insertAdjacentElement("beforeend", txt)  ;
            break;
          case "choice":
            SelectElement txt=new SelectElement();
         
-           document.query("#gender").queryAll("option").forEach( (Element e) {
+           document.querySelector("#gender").querySelectorAll("option").forEach( (Element e) {
             txt.insertAdjacentElement("beforeend", e.clone(true));});
            
            txt..value='$col'
                ..attributes["style"]=c.STYLE;
-           txt.on.focus.add(onRowFocus);
-           txt.on.blur.add(onRowBlur);
+           txt.onFocus.listen(onRowFocus);
+           txt.onBlur.listen(onRowBlur);
       
            cell.insertAdjacentElement("beforeend", txt)  ;
            break;
          default:
-           cell..insertAdjacentHTML("beforeend", """<div style="${c.STYLE}" >$col</div>""");
+           cell..insertAdjacentHtml("beforeend", """<div style="${c.STYLE}" >$col</div>""");
            break;
          }
         j++;
       });
     });
-    int nb_items=tbody.queryAll("tr").length;
+    int nb_items=tbody.querySelectorAll("tr").length;
     this.element.query("#${this.NAME}_footer").nodes[0].text="Fetched Records: $nb_items";
 
     this.syncHeader();
@@ -303,14 +303,14 @@ class CBlock extends Block  {
   
   void onRowFocus(Event evt)  {
     print ("focus");
-    Element cell= evt.srcElement;
+    Element cell= evt.target;
     if ( ! cell.attributes.containsKey("initialValue")) {
       cell.attributes["initialValue"]=cell.value;
     }
-    (cell.parent.parent as Element).classes.add("focus");
+    cell.parent.parent.classes.add("focus");
     //cell.parent.parent.attributes["class"]="focus";
-    int row=int.parse( (cell.parent.parent as Element).attributes['id']);
-    int col=int.parse( (cell.parent as Element).attributes['id']);
+    int row=int.parse( cell.parent.parent.attributes['id']);
+    int col=int.parse( cell.parent.attributes['id']);
     if (row != this.CURRENT_RECORD.number) {
       //print('focus $row , $col');
       GO_RECORD(row );
@@ -319,7 +319,7 @@ class CBlock extends Block  {
         String where="";
         int k_idx=0;
         r.PARENT_KEYS.forEach( (String k) {
-          where=where.concat( " ${r.CHILD.FOREIGN_KEYS[k_idx]} = ${this.getValue(k)}"); 
+          where=where + " ${r.CHILD.FOREIGN_KEYS[k_idx]} = ${this.getValue(k)}"; 
         }); 
         r.CHILD.EXECUTE_QUERY(where);
       });
@@ -327,7 +327,7 @@ class CBlock extends Block  {
     GO_ITEM(col);
   }
   void onRowBlur(Event evt)  {
-    Element cell= evt.srcElement;
+    Element cell= evt.target;
     Element gparent=cell.parent.parent;
     Element ggparent=cell.parent.parent;
     gparent.classes.remove("focus");
@@ -351,7 +351,7 @@ class CBlock extends Block  {
   
   void SAVE() {
     bool ok=true;
-    this.element.queryAll(".error").forEach( (Element td) {
+    this.element.querySelectorAll(".error").forEach( (Element td) {
       if (td.classes.contains("error")) {
         ok=false;
         message("Cannot save: error on  $td ");
@@ -359,10 +359,10 @@ class CBlock extends Block  {
     }
     );
     if (ok) {
-      this.element.queryAll("tr.dirty").forEach( (Element tr) {
+      this.element.querySelectorAll("tr.dirty").forEach( (Element tr) {
           this.BUSY++;
           List data=new List();
-          tr.queryAll("textarea").forEach((TextAreaElement i) {
+          tr.querySelectorAll("textarea").forEach((TextAreaElement i) {
             data.add(i.value);
           });
           this.send(Operation.UPDATE,{'json': data });

@@ -87,12 +87,12 @@ BLOCK\nTable: ${this.TABLE}""";
     this.ROWS.forEach( (List<String> r) {
       i++;
       int j=0;
-      content.add("""<tr num="${i}">""");
+      content.write("""<tr num="${i}">""");
       r.forEach( (col) {
         j++;
-        content.add("""<td num="${j}""><input value="${col}"/></td>""") ;
+        content.write("""<td num="${j}""><input value="${col}"/></td>""") ;
       });
-      content.add("</tr>");
+      content.write("</tr>");
     });
     return content;
   }

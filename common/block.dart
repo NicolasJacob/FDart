@@ -1,5 +1,7 @@
 library block;
-import 'dart:json';
+import 'dart:convert';
+
+
 
 class WhereItem {
   String column;
@@ -81,8 +83,8 @@ class Relation {
   final String WHERE_CLAUSE;
   Relation(this.CHILD,this.PARENT_KEYS,this.WHERE_CLAUSE);
   Map<String,String> toJson(){
-    return { 'block': JSON.stringify(CHILD),
-             'parent_keys': JSON.stringify(PARENT_KEYS),
+    return { 'block': JSON.encoder.convert(CHILD),
+             'parent_keys': JSON.encoder.convert(PARENT_KEYS),
              'where': WHERE_CLAUSE};
   }
 }

@@ -35,7 +35,7 @@ void main() {
   DartServer server = new DartServer();
   server.COLLECTIONS=database;
 
-  server.http_server.listen(HOST, PORT);
+  server.listen(PORT);
 
   print("Serving the current time on http://${HOST}:${PORT}.");
 }

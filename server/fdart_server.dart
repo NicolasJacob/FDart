@@ -1,90 +1,89 @@
-// Copyright (c) 2012, the Dart project authors.  Please see the AUTHORS file
-// for details. All rights reserved. Use of this source code is governed by a
-// BSD-style license that can be found in the LICENSE file.
+
 
 library fdart_server;
+import 'file.dart';
 import "dart:io";
-import "dart:json";
+import "dart:async";
+import "dart:convert";
 import "../common/block.dart";
+import 'package:route/server.dart';
 part "sblock.dart" ;
 
 final HOST = "127.0.0.1";
 final PORT = 8085;
 final LOG_REQUESTS = true;
 
-class DartServer implements HttpServer {
+class DartServer {
   Map _blocks;
   dynamic COLLECTIONS;
   HttpServer http_server;
-  void set defaultRequestHandler( void f(HttpRequest req, HttpResponse resp) ) {}
-  int port;
-  void set sessionTimeout(t) { }
-  void set onError(dynamic err) {}
-  void listen(String host, int port, {int backlog: 128}) {}
-  void listenOn(ServerSocket sock) {}
-  dynamic  addRequestHandler(bool handler(HttpRequest) ,  void act (HttpRequest, HttpResponse) )
-  {}
-  void close() {}
+  void listen(  int port) {
+   
+      HttpServer.bind(InternetAddress.ANY_IP_V6, PORT).then((server) {
+         var router = new Router(server);
+         var allUrls = new RegExp('/(.*)');
+         router.serve(r'/ws')
+           .transform(new WebSocketTransformer())
+             .listen(webSocketHandler);
+         router.serve(allUrls).listen(serveDirectory('', as: '/'));
+         router.serve(r'/status').listen(_serveStatus);
+       }
+      , onError: (err) { print ("Error: $err");} );
+    
+    
+
+  }
   //* Serve a given file in response */
-  Future<bool> _serveFile(String path,HttpResponse response) {
-    Completer<bool> c= new  Completer<bool>();
+  void _serveFile( HttpRequest req) {
+
+    var path=req.uri.path;
     print ("serving ${path}");
     File f=new File("./${path}");
     print("File : ${f}");
     f.exists().then( (bool status)  {
       if (status) {
         if (path.endsWith(".dart")) {
-          response.headers.set(HttpHeaders.CONTENT_TYPE,"application/dart");
+          req.response.headers.set(HttpHeaders.CONTENT_TYPE,"application/dart");
         } else if (path.endsWith(".js")) {
-          response.headers.set(HttpHeaders.CONTENT_TYPE,"application/javascript");
+          req.response.headers.set(HttpHeaders.CONTENT_TYPE,"application/javascript");
         }else if (path.endsWith(".html")) {
-          response.headers.set(HttpHeaders.CONTENT_TYPE,"text/html");
+          req.response.headers.set(HttpHeaders.CONTENT_TYPE,"text/html");
         }
-        f.readAsText().then( (String res) {
-          response.outputStream.writeString(res);
-          c.complete(true);
+        f.readAsString().then( (String res) {
+          req.response.write(res);
+
         } );
       } else {
         print ('Error $path not found.');
-        response.headers.set(HttpHeaders.CONTENT_TYPE,"text/html");
-        response.outputStream.writeString("<p>Error : ${path} not found</p>");
-        c.complete(false);
+        req.response.headers.set(HttpHeaders.CONTENT_TYPE,"text/html");
+        req.response.write("<p>Error : ${path} not found</p>");
+
       }
+      req.response.close();
     });
-    return c.future;
+
     
 
   }
-
-  void respond(WebSocketConnection conn,String operation,String response,String block,var data)
-  {
-    var resp={ 'operation': operation, 'response': response, 'block': block, 'data':data};
-    conn.send(JSON.stringify(resp));
+  void _serveStatus(HttpRequest req){
+    req.response.headers.set(HttpHeaders.CONTENT_TYPE,"text/html");
+    req.response.write("<p>It works !</p>");
+    req.response.close();
+    
   }
-
-  DartServer()
-  {
-    this.http_server=new HttpServer();
-    this._blocks=new Map ();
-
-
-    WebSocketHandler wsHandler = new WebSocketHandler();
-    this.http_server.addRequestHandler((req) => req.path == "/ws", wsHandler.onRequest);
-
-
-    this.http_server.addRequestHandler((req) => req.path != "/ws", requestReceivedHandler);
-
-    wsHandler.onOpen = (WebSocketConnection conn) {
+  
+  void webSocketHandler ( WebSocket conn) {
+ 
       print('new connection');
 
-      conn.onMessage = (message) {
+      conn.listen( (message)  {
         print("message is $message");
         String response;
         Map resp_data;
         String block_name;
         String operation;
         try {
-          var jdata=JSON.parse(message);
+          var jdata=JSON.decoder.convert(message);
           operation = jdata['operation'].toUpperCase();
           block_name  = jdata['block'].toUpperCase() ;
           var op_data= jdata['data'] ;
@@ -95,14 +94,14 @@ class DartServer implements HttpServer {
               bl.EXECUTE_QUERY(op_data["where"]);
               bl.FETCH(100);
               response=Response.DATA;
-              resp_data={ 'json': JSON.stringify( bl.ROWS) };
+              resp_data={ 'json': JSON.encoder.convert( bl.ROWS) };
               //resp_data={ 'html': bl.toHTMLTable().toString()};
               break;
             case Operation.FETCH:
               SBlock bl=this._blocks[block_name];
               bl.FETCH(op_data['number']);
               response=Response.APPEND;
-              resp_data={ 'json': JSON.stringify( bl.ROWS) };
+              resp_data={ 'json': JSON.encoder.convert( bl.ROWS) };
               //resp_data={ 'html': bl.toHTMLTable().toString()};
               break;
             case Operation.DECLARE:
@@ -143,15 +142,28 @@ class DartServer implements HttpServer {
           resp_data={ 'cause': "Unknown error: $e", 'status': Status.ERROR };
         }
         respond(conn,operation,response,block_name,resp_data)  ;
+        
 
-      };
+      }, onError: (err) {print (err);}, onDone: ()=>{} /*, cancelOnError:()=>{}*/ ); 
+  }
+  void set defaultRequestHandler( void f(HttpRequest req, HttpResponse resp) ) {}
+  int port;
 
-      conn.onClosed = (int status, String reason) {
-        print('closed with $status for $reason');
-      };
 
+ 
 
-    };
+  void respond(WebSocket conn,String operation,String response,String block,var data)
+  {
+    var resp={ 'operation': operation, 'response': response, 'block': block, 'data':data};
+    conn.add(JSON.encoder.convert(resp));
+  }
+
+  DartServer()
+  {
+  
+    this._blocks=new Map ();
+
+ 
 
   }
   ADD_BLOCK(SBlock b) {
@@ -160,28 +172,7 @@ class DartServer implements HttpServer {
 
 
 
-  void requestReceivedHandler(HttpRequest request, HttpResponse response) {
-    if (LOG_REQUESTS) {
-      print("Request: ${request.method} ${request.uri}");
-    }
-    if (request.path!='/favicon.ico') {
-     _serveFile(request.path,response).onComplete( (status) {response.outputStream.close();});
-    }
-    else {
-      response.outputStream.close();
-    }
-    /*
-    if (request.path.startsWith('/static')) {
-      _serveFile(request.path,response);
-    } else {
-
-      String htmlResponse = createHtmlResponse();
-
-      response.headers.set(HttpHeaders.CONTENT_TYPE, "text/html; charset=UTF-8");
-      response.outputStream.writeString(htmlResponse);
-      response.outputStream.close();
-    }*/
-  }
+  
 
 }
 

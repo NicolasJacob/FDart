@@ -1,6 +1,7 @@
 library fdart_client;
 import 'dart:html';
-import 'dart:json';
+import 'dart:convert';
+import 'dart:async';
 import '../common/block.dart' ;
 export  '../common/block.dart';
 part 'cblock.dart';
@@ -26,7 +27,7 @@ class CForm {
   CForm(this.NAME) ;
 
   void send(String operation,String block,var data) {
-    var msg=JSON.stringify({'operation': operation, 'block':block, 'data': data});
+    var msg=JSON.encoder.convert({'operation': operation, 'block':block, 'data': data});
     this.ws.send(msg);
   }
 
@@ -37,23 +38,23 @@ class CForm {
   Future<bool> init() {
     Completer<bool> c=new  Completer<bool>();
     ws = new WebSocket("ws://$IP:$PORT/ws");
-    ws.on.open.add((a) {
+    ws.onOpen.listen((a) {
       print("open ${a}");
       IS_CONNECTED = true;
       this.loadBlock();
       c.complete(true);
     });
 
-    ws.on.close.add((a) {
+    ws.onClose.listen((a) {
       print("close $a");
       IS_CONNECTED=false;
       ws=null;
     });
 
-    ws.on.message.add(( m) {
+    ws.onMessage.listen(( m) {
       print ("Message on web socket.");
       try {
-        Map jdata = JSON.parse(m.data);
+        Map jdata = JSON.decoder.convert(m.data);
         var response=jdata['response'];
         var block_name=jdata['block'];
         var resp_data=jdata['data'];
@@ -69,7 +70,7 @@ class CForm {
           case Response.APPEND:
             print("Insert ${resp_data['json']} data in block ${block_name}");
             bl.BUSY--;
-            List<List<dynamic>> d=JSON.parse(resp_data['json']);
+            List<List<dynamic>> d=JSON.decoder.convert(resp_data['json']);
             bl.appendData(d);
             bl.setupTable();
             break;
@@ -93,7 +94,7 @@ class CForm {
 
   void loadBlock() {
     print ("Loading Blocks");
-    queryAll("block").forEach(  (Element block) {
+    querySelectorAll("block").forEach(  (Element block) {
       var bl_name=block.attributes['name'];
       print ("Found block $bl_name");
       CBlock bl;
