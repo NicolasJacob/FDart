@@ -1,6 +1,4 @@
-import "../client/fdart_client.dart";
-import "dart:html";
-
+import 'package:FDart/client/fdart_client.dart';
 
 
 class MODEL extends CBlock{
@@ -18,9 +16,6 @@ class MODEL extends CBlock{
 
 
 main() {
-
-  int count = 0;
-
 
 
  CForm Form=new CForm("TEST");
@@ -42,7 +37,7 @@ main() {
                                         ..LABEL="Last Name"
                                         ..STYLE="height: 12px; "
                                         );
- cust.ADD_COLUMN( new Column("SEX")..DATA_TYPE="TEXT"
+ cust.ADD_COLUMN( new Column("SEX")
      ..LABEL=r"Sex"
      ..DISPLAY_TYPE="choice"
      ..STYLE="width:100px"
@@ -58,8 +53,17 @@ main() {
  purshase.ADD_COLUMN(new Column("id")..VISIBLE=false..DATA_TYPE="NUMBER"..PRIMARY_KEY=true);
  purshase.ADD_COLUMN(new Column("CUST_id")..VISIBLE=false..DATA_TYPE="NUMBER");
 
- purshase.ADD_COLUMN(new Column("NAME")..LABEL="Date");
- purshase.ADD_COLUMN(new Column("VALUE")..LABEL="Total");
+ purshase.ADD_COLUMN(
+  new Column("NAME")
+    ..DISPLAY_TYPE="input"
+    ..LABEL="Date"
+ );
+
+ purshase.ADD_COLUMN(
+   new Column("VALUE")
+     ..DISPLAY_TYPE="input"
+     ..LABEL="Total"
+ );
  purshase.FOREIGN_KEYS.add("CUST_id");
  cust.CHILDS.add(new Relation(purshase,["id"] ,""));
 

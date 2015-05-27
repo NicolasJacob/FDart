@@ -5,7 +5,7 @@ import 'file.dart';
 import "dart:io";
 import "dart:async";
 import "dart:convert";
-import "../common/block.dart";
+import '../lib/common/block.dart';
 import 'package:route/server.dart';
 part "sblock.dart" ;
 
@@ -18,7 +18,7 @@ class DartServer {
   dynamic COLLECTIONS;
   HttpServer http_server;
   void listen(  int port) {
-   
+
       HttpServer.bind(InternetAddress.ANY_IP_V6, PORT).then((server) {
          var router = new Router(server);
          var allUrls = new RegExp('/(.*)');
@@ -29,8 +29,8 @@ class DartServer {
          router.serve(r'/status').listen(_serveStatus);
        }
       , onError: (err) { print ("Error: $err");} );
-    
-    
+
+
 
   }
   //* Serve a given file in response */
@@ -62,18 +62,18 @@ class DartServer {
       req.response.close();
     });
 
-    
+
 
   }
   void _serveStatus(HttpRequest req){
     req.response.headers.set(HttpHeaders.CONTENT_TYPE,"text/html");
     req.response.write("<p>It works !</p>");
     req.response.close();
-    
+
   }
-  
+
   void webSocketHandler ( WebSocket conn) {
- 
+
       print('new connection');
 
       conn.listen( (message)  {
@@ -142,15 +142,15 @@ class DartServer {
           resp_data={ 'cause': "Unknown error: $e", 'status': Status.ERROR };
         }
         respond(conn,operation,response,block_name,resp_data)  ;
-        
 
-      }, onError: (err) {print (err);}, onDone: ()=>{} /*, cancelOnError:()=>{}*/ ); 
+
+      }, onError: (err) {print (err);}, onDone: ()=>{} /*, cancelOnError:()=>{}*/ );
   }
   void set defaultRequestHandler( void f(HttpRequest req, HttpResponse resp) ) {}
   int port;
 
 
- 
+
 
   void respond(WebSocket conn,String operation,String response,String block,var data)
   {
@@ -160,19 +160,15 @@ class DartServer {
 
   DartServer()
   {
-  
+
     this._blocks=new Map ();
 
- 
+
 
   }
   ADD_BLOCK(SBlock b) {
     this._blocks[b.NAME]=b;
   }
-
-
-
-  
 
 }
 

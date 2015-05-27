@@ -1,4 +1,4 @@
-import "common/block.dart";
+import 'lib/common/block.dart';
 import "server/fdart_server.dart";
 import "dart:io";
 
